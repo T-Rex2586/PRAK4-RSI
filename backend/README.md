@@ -35,7 +35,7 @@ venv\Scripts\activate
 Install dependencies:
 
 ```bash
-pip install "fastapi[standart]", uvicorn, sqlmodel, psycopg2, alembic, "python-jose[cryptography]" "passlib[bcrypt]"
+pip install "fastapi[standart]", uvicorn, sqlmodel, psycopg2, alembic, "python-jose[cryptography]" "passlib[bcrypt]", "pydantic[email]"
 ```
 
 ---
