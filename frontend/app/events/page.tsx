@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getAuthHeaders, API_BASE_URL } from "@/lib/auth";
 import Link from "next/link";
 
 type Event = {
@@ -21,13 +22,8 @@ export default function EventsPage() {
     async function fetchEvents() {
       try {
         // Ganti dengan helper getAuthHeaders() nanti
-        const token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsInVzZXJfaWQiOjExLCJyb2xlIjoidXNlciIsImV4cCI6MTc3ODA3NTE2NX0.BswMH9nlKG_gy2LNHptTNpo_ZdV9OTtOhLey_yZ1aPE";
-        const res = await fetch(`http://localhost:8000/events/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+        const res = await fetch(`${API_BASE_URL}/events/`, {
+          headers: getAuthHeaders(),
         });
         if (!res.ok) throw new Error("Gagal memuat daftar event");
         const data = await res.json();

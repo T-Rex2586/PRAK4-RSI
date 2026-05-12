@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { getAuthHeaders, API_BASE_URL } from "@/lib/auth";
 import Link from "next/link";
 
 export default function EventDetailPage() {
@@ -15,15 +16,9 @@ export default function EventDetailPage() {
   useEffect(() => {
     async function fetchEvent() {
       try {
-        const token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsInVzZXJfaWQiOjExLCJyb2xlIjoidXNlciIsImV4cCI6MTc3ODA3NTE2NX0.BswMH9nlKG_gy2LNHptTNpo_ZdV9OTtOhLey_yZ1aPE";  // TODO: ambil dari auth
-        const res = await fetch(`http://localhost:8000/events/${eventId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+        const res = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+          headers: getAuthHeaders(),
         });
-
         if (!res.ok) {
           throw new Error("Event tidak ditemukan");
         }
