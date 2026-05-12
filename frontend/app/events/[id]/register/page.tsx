@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { getAuthHeaders, getUserIdFromToken, API_BASE_URL } from "@/lib/auth";
 import Link from "next/link";
 
 
@@ -20,9 +21,8 @@ export default function RegisterEventPage() {
   useEffect(() => {
     async function fetchEvent() {
         try {
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsInVzZXJfaWQiOjExLCJyb2xlIjoidXNlciIsImV4cCI6MTc3ODA3NTE2NX0.BswMH9nlKG_gy2LNHptTNpo_ZdV9OTtOhLey_yZ1aPE"; // TODO: ambil dari auth
-        const res = await fetch(`http://localhost:8000/events/${eventId}`, {
-            headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+          headers: getAuthHeaders(),
         });
         if (!res.ok) throw new Error("Event tidak ditemukan");
         const data = await res.json();
@@ -42,17 +42,13 @@ export default function RegisterEventPage() {
     setError(null);
 
     try {
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsInVzZXJfaWQiOjExLCJyb2xlIjoidXNlciIsImV4cCI6MTc3ODA3NTE2NX0.BswMH9nlKG_gy2LNHptTNpo_ZdV9OTtOhLey_yZ1aPE"; // TODO: ambil dari auth
-        const res = await fetch("http://localhost:8000/registrations", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-            user_id: 11, // TODO: ambil dari auth
+        const res = await fetch(`${API_BASE_URL}/registrations`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            user_id: getUserIdFromToken(),
             event_id: eventId,
-        }),
+          }),
         });
 
         if (!res.ok) {
