@@ -67,7 +67,7 @@ docker-compose up -d
 ### 3. Access PostgreSQL
 
 ```bash
-docker exec -it docker-rsi psql -U postgres
+docker exec -it docker-rsi-tugas-3 psql -U postgres
 ```
 
 ---
