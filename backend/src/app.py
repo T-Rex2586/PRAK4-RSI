@@ -15,12 +15,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
 
+# Router didaftarkan SETELAH Middleware
 app.include_router(api_router)
 
 @app.get("/")
