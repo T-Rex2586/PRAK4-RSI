@@ -3,15 +3,59 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LoginTemplate() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login with:", { email, password });
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (typeof data.detail === "string") {
+          setError(data.detail);
+        } else if (Array.isArray(data.detail)) {
+          setError(data.detail.map((d: any) => d.msg).join(", "));
+        } else {
+          setError("Login gagal. Periksa email dan password.");
+        }
+        return;
+      }
+
+      // Simpan token dan info user
+localStorage.setItem("access_token", data.access_token);
+localStorage.setItem("role", data.role);
+localStorage.setItem("account_id", String(data.account_id));
+
+      // Routing berdasarkan role
+if (data.role === "superadmin") {
+  router.push("/admin/events");
+} else if (data.role === "admin") {
+  router.push("/admin/events");
+} else {
+  router.push("/events");
+}
+    } catch (err) {
+      setError("Tidak dapat terhubung ke server.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,6 +96,13 @@ export default function LoginTemplate() {
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Log In</h1>
             <p className="text-gray-500 text-sm">Masukkan kredensial Anda.</p>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm text-center">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -95,12 +146,13 @@ export default function LoginTemplate() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full py-3 rounded-xl text-white font-semibold text-sm tracking-wide transition-opacity hover:opacity-90 mt-2"
+              disabled={loading}
+              className="w-full py-3 rounded-xl text-white font-semibold text-sm tracking-wide transition-opacity hover:opacity-90 mt-2 disabled:opacity-60"
               style={{
                 background: "linear-gradient(to right, #7c3aed, #ec4899)",
               }}
             >
-              Log In
+              {loading ? "Memuat..." : "Log In"}
             </button>
           </form>
 
