@@ -7,8 +7,11 @@ import {
   ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight
 } from "lucide-react";
 import { getAuthHeaders, API_BASE_URL } from "@/lib/auth";
+import { toast } from "sonner";
+import { useConfirm } from "@/lib/hooks/useConfirm";
 
 export default function AdminEventsPage() {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [events, setEvents] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -36,22 +39,28 @@ export default function AdminEventsPage() {
   }, []);
 
   const handleDelete = async (id: number, name: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus event "${name}"?`)) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/events/${id}`, {
-          method: "DELETE",
-          headers: getAuthHeaders(),
-        });
+    const ok = await confirm({
+      title: "Hapus Event",
+      message: `Apakah Anda yakin ingin menghapus event "${name}"?`,
+      confirmLabel: "Ya, Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
 
-        if (res.ok) {
-          alert("Event berhasil dihapus.");
-          setEvents(events.filter(e => e.id !== id));
-        } else {
-          alert("Gagal menghapus event. Pastikan tidak ada peserta yang terdaftar.");
-        }
-      } catch (err) {
-        alert("Terjadi kesalahan koneksi saat menghapus.");
+    try {
+      const res = await fetch(`${API_BASE_URL}/events/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+
+      if (res.ok) {
+        toast.success("Event berhasil dihapus.");
+        setEvents(events.filter(e => e.id !== id));
+      } else {
+        toast.error("Gagal menghapus event. Pastikan tidak ada peserta yang terdaftar.");
       }
+    } catch (err) {
+      toast.error("Terjadi kesalahan koneksi saat menghapus.");
     }
   };
 
@@ -67,21 +76,6 @@ export default function AdminEventsPage() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col py-10 px-6">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
-        .font-display { font-family: 'Instrument Serif', Georgia, serif; }
-        .font-body    { font-family: 'DM Sans', sans-serif; }
-        .gradient-text {
-          background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .btn-primary {
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-          color: white;
-          transition: all 0.2s;
-        }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-      `}</style>
 
       <div className="max-w-6xl w-full mx-auto font-body">
         <div className="mb-8 flex justify-between items-end">
@@ -95,7 +89,7 @@ export default function AdminEventsPage() {
           </div>
           <Link
             href="/admin/events/create"
-            className="btn-primary px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-semibold shadow-lg shadow-indigo-500/20"
+            className="btn-primary shadow-lg shadow-indigo-500/20 hover:opacity-90 hover:-translate-y-px"
           >
             <Plus size={18} /> Add Event
           </Link>
@@ -233,6 +227,7 @@ export default function AdminEventsPage() {
           </div>
         </div>
       </div>
+      {ConfirmDialog}
     </div>
   );
 }

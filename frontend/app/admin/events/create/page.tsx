@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getAuthHeaders, API_BASE_URL } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -27,8 +28,6 @@ export default function CreateEventPage() {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
     };
 
-    const now = toDbFormat(new Date().toISOString());
-
     try {
       const payload = {
         name: formData.name,
@@ -36,8 +35,6 @@ export default function CreateEventPage() {
         quota: Number(formData.quota),
         started_at: toDbFormat(formData.started_at),
         ended_at: toDbFormat(formData.ended_at),
-        created_at: now,
-        updated_at: now
       };
 
       const res = await fetch(`${API_BASE_URL}/events/`, {
@@ -50,14 +47,14 @@ export default function CreateEventPage() {
       });
 
       if (res.ok) {
-        alert("Event baru berhasil dibuat.");
+        toast.success("Event baru berhasil dibuat.");
         router.push("/admin/events");
       } else {
         const errorData = await res.json();
-        alert("Gagal menyimpan event: " + JSON.stringify(errorData.detail));
+        toast.error("Gagal menyimpan event: " + JSON.stringify(errorData.detail));
       }
     } catch (err) {
-      alert("Terjadi kesalahan koneksi ke server. Pastikan backend menyala.");
+      toast.error("Terjadi kesalahan koneksi ke server. Pastikan backend menyala.");
     } finally {
       setLoading(false);
     }
@@ -65,18 +62,6 @@ export default function CreateEventPage() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col py-10 px-6">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
-        .font-display { font-family: 'Instrument Serif', Georgia, serif; }
-        .font-body    { font-family: 'DM Sans', sans-serif; }
-        .btn-primary {
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-          color: white;
-          transition: all 0.2s;
-        }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-      `}</style>
-
       <div className="max-w-2xl w-full mx-auto">
         <Link href="/admin/events" className="text-sm text-zinc-500 hover:text-indigo-600 mb-6 inline-block">
           &larr; Batal dan Kembali
@@ -149,7 +134,7 @@ export default function CreateEventPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary px-8 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/20"
+                className="btn-primary shadow-lg shadow-indigo-500/20 hover:opacity-90 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {loading ? "Menyimpan..." : "Simpan Event"}
               </button>
