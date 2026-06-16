@@ -2,7 +2,7 @@ from sqlmodel import Session
 from src.repositories.account_repository import AccountRepository
 from src.database.model.models import Account
 from src.utils.security import hash_password
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class AccountService:
@@ -23,8 +23,8 @@ class AccountService:
             email=data.email,
             username=data.username,
             password=hash_password(data.password),
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         return self.repo.create(db, account)
 
@@ -44,7 +44,7 @@ class AccountService:
         if data.password is not None:
             account.password = hash_password(data.password)
 
-        account.updated_at = datetime.now()
+        account.updated_at = datetime.now(timezone.utc)
 
         return self.repo.update(db, account)
 

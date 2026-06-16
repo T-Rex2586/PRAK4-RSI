@@ -1,7 +1,7 @@
 from sqlmodel import Session
 from src.repositories.user_repository import UserRepository
 from src.database.model.models import User
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import HTTPException
 
 
@@ -20,10 +20,11 @@ class UserService:
         return user
 
     def create_user(self, session: Session, user_data):
+        now = datetime.now(timezone.utc)
         user = User(
-            **user_data.dict(),
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            **user_data.model_dump(),
+            created_at=now,
+            updated_at=now
         )
         return self.repository.create(session, user)
 
@@ -32,10 +33,10 @@ class UserService:
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        for key, value in user_data.dict(exclude_unset=True).items():
+        for key, value in user_data.model_dump(exclude_unset=True).items():
             setattr(user, key, value)
 
-        user.updated_at = datetime.now()
+        user.updated_at = datetime.now(timezone.utc)
 
         return self.repository.update(session, user)
 

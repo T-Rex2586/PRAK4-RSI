@@ -5,7 +5,7 @@ from src.repositories.auth_repository import AuthRepository
 from src.dto.auth_dto import LoginRequest, TokenResponse, RegisterRequest
 from src.utils.security import verify_password, create_access_token, hash_password
 from src.database.model.models import User, Account, Role
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class AuthService:
@@ -68,8 +68,8 @@ class AuthService:
             first_name=payload.username,
             last_name="",
             whatsapp="",
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         self.session.add(user)
         self.session.commit()
@@ -88,8 +88,8 @@ class AuthService:
             password=hashed_password,
             user_id=user.id,
             role_id=role.id,
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         self.session.add(account)
         self.session.commit()

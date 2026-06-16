@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from src.database.connection import engine
 from src.database.model.models import (
     Role, User, Account, Event, Registration, Log
@@ -7,7 +7,7 @@ from src.database.model.models import (
 from src.utils.security import hash_password
 
 def now():
-    return datetime.utcnow()
+    return datetime.now(timezone.utc)
 
 
 def seed_roles(session: Session):

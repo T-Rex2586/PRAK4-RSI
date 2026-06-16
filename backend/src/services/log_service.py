@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from src.database.model.models import Log
 from src.dto.log_dto import LogCreate
-from datetime import datetime
+from datetime import datetime, timezone
 
 class LogService:
     def get_logs(self, db: Session):
@@ -18,7 +18,7 @@ class LogService:
             user_agent=data.user_agent,
             entity=data.entity,
             entity_id=data.entity_id,
-            created_at=datetime.now()
+            created_at=datetime.now(timezone.utc)
         )
         db.add(log)
         db.commit()
