@@ -15,16 +15,15 @@ interface LoginPayload {
 }
 
 interface LoginResponse {
-  code: number;
-  message: string;
-  data: {
-    access_token: string;
-    refresh_token: string;
-  };
+  access_token: string;
+  token_type: string;
+  account_id: number;
+  user_id: number;
+  role: string;
 }
 
 export const registerUser = async (userData: RegisterPayload) => {
-  const response = await fetch(`${API_BASE_URL}/register`, {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -44,7 +43,7 @@ export const registerUser = async (userData: RegisterPayload) => {
 export const LoginUser = async (
   credentials: LoginPayload
 ): Promise<LoginResponse> => {
-  const response = await fetch(`${API_BASE_URL}/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,12 +54,11 @@ export const LoginUser = async (
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result?.message || "Login failed");
+    throw new Error(result.detail || "Login failed");
   }
 
-  if (typeof window !== "undefined" && result?.data?.access_token) {
-    localStorage.setItem("access_token", result.data.access_token);
-    localStorage.setItem("refresh_token", result.data.refresh_token);
+  if (typeof window !== "undefined" && result.access_token) {
+    localStorage.setItem("access_token", result.access_token);
   }
 
   return result as LoginResponse;
@@ -69,7 +67,6 @@ export const LoginUser = async (
 export const logoutUser = (): void => {
   if (typeof window !== "undefined") {
     localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
   }
 };
 

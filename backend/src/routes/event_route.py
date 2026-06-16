@@ -10,7 +10,6 @@ router = APIRouter(prefix="/events", tags=["Events"])
 @router.get("/")
 def get_events(
     db: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_account),
 ):
     controller = EventController(db)
     return controller.get_all()
@@ -19,7 +18,6 @@ def get_events(
 def get_event(
     id: int,
     db: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_account),
 ):
     controller = EventController(db)
     return controller.get_by_id(id)

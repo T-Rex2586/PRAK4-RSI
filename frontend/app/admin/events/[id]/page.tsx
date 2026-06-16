@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getAuthHeaders, API_BASE_URL } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function EditEventPage() {
   const router = useRouter();
   const { id } = useParams();
   const [formData, setFormData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     async function fetchEvent() {
@@ -37,6 +39,7 @@ export default function EditEventPage() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const res = await fetch(`${API_BASE_URL}/events/${id}`, {
         method: "PUT",
@@ -47,13 +50,15 @@ export default function EditEventPage() {
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        alert("Data event berhasil diperbarui.");
+        toast.success("Data event berhasil diperbarui.");
         router.push("/admin/events");
       } else {
-        alert("Gagal memperbarui event. Periksa kembali isian Anda.");
+        toast.error("Gagal memperbarui event. Periksa kembali isian Anda.");
       }
     } catch (err) {
-      alert("Terjadi kesalahan koneksi ke server.");
+      toast.error("Terjadi kesalahan koneksi ke server.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -71,18 +76,6 @@ export default function EditEventPage() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col py-10 px-6">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
-        .font-display { font-family: 'Instrument Serif', Georgia, serif; }
-        .font-body    { font-family: 'DM Sans', sans-serif; }
-        .btn-primary {
-          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-          color: white;
-          transition: all 0.2s;
-        }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-      `}</style>
-
       <div className="max-w-2xl w-full mx-auto">
         <Link
           href="/admin/events"
@@ -165,9 +158,10 @@ export default function EditEventPage() {
               </Link>
               <button
                 type="submit"
-                className="btn-primary px-8 py-2.5 rounded-xl font-semibold shadow-lg shadow-indigo-500/20"
+                disabled={submitting}
+                className="btn-primary shadow-lg shadow-indigo-500/20 hover:opacity-90 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
               >
-                Simpan Perubahan
+                {submitting ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>
           </form>

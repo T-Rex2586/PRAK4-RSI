@@ -1,7 +1,8 @@
+import os
 from sqlmodel import create_engine, SQLModel, Session
 from src.database.model.models import *
 
-DATABASE_URL = "postgresql://postgres:1234@localhost:5433/acara_rsi"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:1234@localhost:5433/acara_rsi")
 
 engine = create_engine(DATABASE_URL, echo=False)
 

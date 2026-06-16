@@ -1,7 +1,7 @@
 from sqlmodel import Session
 from src.repositories.role_repository import RoleRepository
 from src.database.model.models import Role
-from datetime import datetime
+from datetime import datetime, timezone
 
 class RoleService:
 
@@ -16,12 +16,12 @@ class RoleService:
         return self.repo.get_by_id(db, role_id)
 
     def create_role(self, db: Session, data):
-        # Membungkus data DTO ke dalam Model Database
+        now = datetime.now(timezone.utc)
         role = Role(
             name=data.name,
             description=data.description,
-            created_at=datetime.now(),
-            updated_at=datetime.now()
+            created_at=now,
+            updated_at=now
         )
         return self.repo.create(db, role)
 
@@ -30,13 +30,12 @@ class RoleService:
         if not role:
             return None
 
-        # Update secara selektif (Optional Check)
         if data.name is not None:
             role.name = data.name
         if data.description is not None:
             role.description = data.description
 
-        role.updated_at = datetime.now()
+        role.updated_at = datetime.now(timezone.utc)
         return self.repo.update(db, role)
 
     def delete_role(self, db: Session, role_id: int):

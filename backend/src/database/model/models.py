@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -8,6 +8,9 @@ class Role(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=255)
+    description: Optional[str] = Field(default=None, max_length=255)
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     accounts: list["Account"] = Relationship(back_populates="role")
 
@@ -59,8 +62,8 @@ class Event(SQLModel, table=True):
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
 
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     registrations: list["Registration"] = Relationship(back_populates="event")
 

@@ -1,53 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import { API_BASE_URL } from "@/lib/auth";
 
 export default function LoginTemplate() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login with:", { email, password });
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: email, password }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.detail || "Login gagal");
+      }
+
+      localStorage.setItem("access_token", result.access_token);
+
+      if (result.role === "admin" || result.role === "superadmin") {
+        router.push("/admin");
+      } else {
+        router.push("/events");
+      }
+    } catch (err: any) {
+      if (err.message === "Failed to fetch") {
+        setErrorMsg("Koneksi ke server terputus.");
+      } else {
+        setErrorMsg(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen w-full bg-gray-50 flex flex-col">
-
-      {/* Navbar */}
-      <nav className="w-full bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <span className="font-bold text-gray-900 text-base">App</span>
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-500">
-            <Link href="#" className="hover:text-gray-800 transition">Browse Event</Link>
-            <Link href="#" className="hover:text-gray-800 transition">Features</Link>
-            <Link href="#" className="hover:text-gray-800 transition">Schedule</Link>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/auth/login"
-            className="text-sm text-gray-700 font-medium hover:text-gray-900 transition px-3 py-1.5"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/auth/register"
-            className="text-sm text-white font-semibold px-4 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-700 transition"
-          >
-            Sign Up
-          </Link>
-        </div>
-      </nav>
-
-      {/* Main content */}
       <div className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
 
-          {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Log In</h1>
             <p className="text-gray-500 text-sm">Masukkan kredensial Anda.</p>
@@ -55,20 +61,25 @@ export default function LoginTemplate() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Email */}
+            {errorMsg && (
+              <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-sm text-red-600 font-body">
+                {errorMsg}
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Email</label>
               <input
                 type="email"
-                placeholder="aanindya05@gmail.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+                disabled={loading}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition disabled:opacity-50"
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Password</label>
               <div className="relative">
@@ -78,7 +89,8 @@ export default function LoginTemplate() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-3 py-2.5 pr-10 rounded-lg border border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+                  disabled={loading}
+                  className="w-full px-3 py-2.5 pr-10 rounded-lg border border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -89,18 +101,18 @@ export default function LoginTemplate() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-purple-400">*Min. 8 characters & 1 Uppercase Letter</p>
+              <p className="text-xs text-purple-400">*Min. 8 karakter</p>
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
-              className="w-full py-3 rounded-xl text-white font-semibold text-sm tracking-wide transition-opacity hover:opacity-90 mt-2"
+              disabled={loading}
+              className="w-full py-3 rounded-xl text-white font-semibold text-sm tracking-wide transition-opacity hover:opacity-90 mt-2 disabled:opacity-60"
               style={{
                 background: "linear-gradient(to right, #7c3aed, #ec4899)",
               }}
             >
-              Log In
+              {loading ? "Memproses..." : "Log In"}
             </button>
           </form>
 
