@@ -1,10 +1,11 @@
+import os
 import bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 
-SECRET_KEY = "sdbif2382isdnfafd83278dq2f39d8f9i23utt2dhhcew"
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "sdbif2382isdnfafd83278dq2f39d8f9i23utt2dhhcew")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -17,7 +18,7 @@ def hash_password(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + (
+    expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     to_encode.update({"exp": expire})
